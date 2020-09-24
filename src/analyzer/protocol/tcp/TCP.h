@@ -9,6 +9,9 @@
 #include "TCP_Endpoint.h"
 #include "TCP_Flags.h"
 #include "Conn.h"
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
 
 // We define two classes here:
 // - TCP_Analyzer is the analyzer for the TCP protocol itself.
