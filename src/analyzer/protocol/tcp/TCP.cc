@@ -1092,7 +1092,7 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 
 	uint32 tcp_hdr_len = data - (const u_char*) tp;
 
-	if ( tcp_option && tcp_hdr_len > sizeof(*tp) &&
+	if ( tcp_hdr_len > sizeof(*tp) &&
 	     tcp_hdr_len <= uint32(caplen) )
 		{
 		if ( ! ValidateMD5Option(tp) )
