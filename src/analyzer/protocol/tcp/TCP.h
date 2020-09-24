@@ -106,7 +106,7 @@ protected:
 	bool ValidateChecksum(const struct tcphdr* tp, TCP_Endpoint* endpoint,
 				int len, int caplen);
 
-	bool TCP_Analyzer::ValidateMD5Option(const struct tcphdr* tcp);
+	bool ValidateMD5Option(const struct tcphdr* tcp);
 
 	void SetPartialStatus(TCP_Flags flags, bool is_orig);
 
