@@ -1091,7 +1091,8 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 		return;
 
 	uint32 tcp_hdr_len = data - (const u_char*) tp;
-
+	printf("New version\n");
+	
 	if ( tcp_option && tcp_hdr_len > sizeof(*tp) &&
 	     tcp_hdr_len <= uint32(caplen) )
 		{
