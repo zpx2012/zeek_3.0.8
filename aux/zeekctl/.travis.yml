@@ -1,0 +1,41 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+addons:
+  apt:
+    packages:
+      - libpcap-dev
+      - swig
+
+branches:
+  only:
+  - master
+
+notifications:
+  email:
+    recipients:
+    - zeek-commits-internal@zeek.org
+
+before_install:
+  # Python 2.7 doesn't have the ipaddress module (required by broker).
+  - python -c "import ipaddress" || pip install ipaddress
+  # Clone the zeek git repo and replace zeekctl.
+  - cd ..
+  - tar cf zeekctl.tar --exclude=.git zeekctl
+  - rm -rf zeekctl
+  - git clone --recursive https://github.com/zeek/zeek zeek
+  - rm -rf zeek/aux/zeekctl
+  - tar xf zeekctl.tar -C zeek/aux
+  - rm -f zeekctl.tar
+  - cd zeek/aux/zeekctl/testing
+
+install:
+  - make buildzeek
+
+script: ../../btest/btest -f diag.log -A
+
+after_failure: cat diag.log

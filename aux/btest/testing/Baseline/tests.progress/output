@@ -1,0 +1,28 @@
+progress ... 
+  - Foo 1
+  - Foo 2
+  - Foo 3
+  - Foo 4
+progress ... ok
+all 1 tests successful
+---
+  % cat .stderr
+  [btest] -- Foo 1
+  [btest] -- Foo 1 -- 2019-08-27T04:12:12.127Z
+  [btest] -- Foo 3
+  [btest] -- Foo 3 -- 2019-08-27T04:12:14.141Z
+  [btest] -- Foo 4
+  [btest] -- Foo 4
+
+all 1 tests successful
+---
+progress ...
+  > bash %INPUT >&2
+  - Foo 1
+  - Foo 2
+  - Foo 3
+  - Foo 4
+... progress ok
+all 1 tests successful
+---
+---

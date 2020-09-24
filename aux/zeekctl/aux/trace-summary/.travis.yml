@@ -1,0 +1,21 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+branches:
+  only:
+  - master
+
+notifications:
+  email:
+    recipients:
+    - zeek-commits-internal@zeek.org
+
+install: pip install btest pysubnettree
+
+script: make test BTEST=`which btest`
+
+after_failure: cat testing/diag.log

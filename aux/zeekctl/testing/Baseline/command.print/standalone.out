@@ -1,0 +1,1 @@
+        zeek   Log::default_rotation_interval = 1.0 hr

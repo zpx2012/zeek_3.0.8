@@ -1,0 +1,34 @@
+
+1.2 | 2019-06-12 15:01:17 -0700
+
+  * Release 1.2.
+
+1.1-19 | 2019-06-12 15:01:04 -0700
+
+  * Rename directories from bro to zeek (Daniel Thayer)
+
+1.1-16 | 2019-05-20 19:38:17 -0700
+
+  * Rename Bro to Zeek (Daniel Thayer)
+
+  * Update codegen to use faster val_list and event queue API (Jon Siwek, Corelight)
+
+1.1-10 | 2019-04-16 11:48:09 -0700
+
+  * Change file extension of auto-generated script files to .zeek (Daniel Thayer)
+
+  * Use ValManager for creating Vals (Jon Siwek, Corelight)
+
+  * Update submodules to use github.com/zeek (Jon Siwek, Corelight)
+
+1.1 | 2018-08-31 15:23:21 -0500
+
+  * Add Makefile (Jon Siwek, Corelight)
+
+1.0-1 | 2018-07-24 01:58:34 +0000
+
+  * Fix compiler warning. (Robin Sommer, Corelight)
+
+1.0 | 2018-07-24 01:54:16 +0000
+
+  * bifcl is a now a separate project, starting CHANGES.
