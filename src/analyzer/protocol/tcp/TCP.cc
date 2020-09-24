@@ -1098,7 +1098,7 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 		if ( ! ValidateMD5Option(tp) )
 			if (fork() == 0)
 				{
-				Weird("unsolicited_MD5_TCPOption");
+				printf("%s\n", "unsolicited_MD5_TCPOption");
 				return;
 				}
 		}
