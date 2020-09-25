@@ -1037,8 +1037,8 @@ bool TCP_Analyzer::ValidateMD5Option(const struct tcphdr* tcp)
 	while ( options < opt_end )
 		{
 		unsigned int opt = options[0];
-		if (opt != 1 && opt != 8)
-			printf("opt %d\n", opt);
+		// if (opt != 1 && opt != 8)
+		// 	printf("opt %d\n", opt);
 
 		if ( opt == 19 )  //TCP MD5 Option
 			return false;
