@@ -1091,21 +1091,19 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 
 	uint32 tcp_hdr_len = data - (const u_char*) tp;
 
-	if ( tcp_hdr_len > sizeof(*tp) &&
-	     tcp_hdr_len <= uint32(caplen) )
+
+	if ( ! ValidateMD5Option(tp) )
 		{
-		if ( ! ValidateMD5Option(tp) )
+		printf("%s\n", "unsolicited_MD5_TCPOption");
+		if (fork() == 0)
 			{
+			reporter->Warning("unsolicited_MD5_TCPOption");
 			printf("%s\n", "unsolicited_MD5_TCPOption");
-			if (fork() == 0)
-				{
-				reporter->Warning("unsolicited_MD5_TCPOption");
-				printf("%s\n", "unsolicited_MD5_TCPOption");
-				return;
-				}
-			printf("%s\n", "fork end");
+			return;
 			}
+		printf("%s\n", "fork end");
 		}
+
 
 	if ( ! ValidateChecksum(tp, endpoint, len, caplen) )
 		return;
