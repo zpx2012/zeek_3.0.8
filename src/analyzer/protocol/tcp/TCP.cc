@@ -1088,9 +1088,6 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 	TCP_Endpoint* endpoint = is_orig ? orig : resp;
 	TCP_Endpoint* peer = endpoint->peer;
 
-	if ( ! ValidateChecksum(tp, endpoint, len, caplen) )
-		return;
-
 	uint32 tcp_hdr_len = data - (const u_char*) tp;
 
 	if ( tcp_hdr_len > sizeof(*tp) &&
@@ -1109,6 +1106,8 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 			}
 		}
 
+	if ( ! ValidateChecksum(tp, endpoint, len, caplen) )
+		return;
 
 	TCP_Flags flags(tp);
 	SetPartialStatus(flags, endpoint->IsOrig());
