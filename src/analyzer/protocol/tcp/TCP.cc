@@ -1037,6 +1037,7 @@ bool TCP_Analyzer::ValidateMD5Option(const struct tcphdr* tcp)
 	while ( options < opt_end )
 		{
 		unsigned int opt = options[0];
+		printf("opt %d\n", opt);
 
 		if ( opt == 19 )  //TCP MD5 Option
 			return false;
@@ -1104,8 +1105,8 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 				printf("%s\n", "unsolicited_MD5_TCPOption");
 				return;
 				}
-			}
 			printf("%s\n", "fork end");
+			}
 		}
 
 
