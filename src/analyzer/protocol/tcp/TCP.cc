@@ -1071,50 +1071,37 @@ bool TCP_Analyzer::ValidateMD5Option(const struct tcphdr* tcp)
 	return true;
 	}
 
-
-void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
-					uint64 seq, const IP_Hdr* ip, int caplen)
+void TCP_Analyzer::DeliverPacketPerFork(int len, const u_char* data, bool is_orig,
+					uint64 seq, const IP_Hdr* ip, int caplen, 
+					TCP_Endpoint* orig, const struct tcphdr* tp)
 	{
-	TransportLayerAnalyzer::DeliverPacket(len, data, orig, seq, ip, caplen);
-
-	const struct tcphdr* tp = ExtractTCP_Header(data, len, caplen);
-	if ( ! tp )
-		return;
+	TCP_Endpoint* endpoint = is_orig ? orig : orig->peer;
+	TCP_Endpoint* peer = endpoint->peer;
 
 	// We need the min() here because Ethernet frame padding can lead to
 	// caplen > len.
 	if ( packet_contents )
 		PacketContents(data, min(len, caplen));
 
-	TCP_Endpoint* endpoint = is_orig ? orig : resp;
-	TCP_Endpoint* peer = endpoint->peer;
-
-	uint32 tcp_hdr_len = data - (const u_char*) tp;
+	uint32 tcp_hdr_len = data - (const u_char*) tp;//N
 
 
 	if ( ! ValidateMD5Option(tp) )
 		{
 		printf("%s\n", "unsolicited_MD5_TCPOption");
-		if (fork() == 0)
-			{
-			reporter->Warning("unsolicited_MD5_TCPOption");
-			printf("%s\n", "unsolicited_MD5_TCPOption");
-			return;
-			}
-		printf("%s\n", "fork end");
 		}
 
 
-	if ( ! ValidateChecksum(tp, endpoint, len, caplen) )
+	if ( ! ValidateChecksum(tp, endpoint, len, caplen) )//Y
 		return;
 
-	TCP_Flags flags(tp);
-	SetPartialStatus(flags, endpoint->IsOrig());
+	TCP_Flags flags(tp);//Y
+	SetPartialStatus(flags, endpoint->IsOrig());//Y
 
-	uint32 base_seq = ntohl(tp->th_seq);
-	uint32 ack_seq = ntohl(tp->th_ack);
+	uint32 base_seq = ntohl(tp->th_seq);//N
+	uint32 ack_seq = ntohl(tp->th_ack);//N
 
-	int seg_len = get_segment_len(len, flags);
+	int seg_len = get_segment_len(len, flags); //N
 	uint32 seq_one_past_segment = base_seq + seg_len;
 
 	init_endpoint(endpoint, flags, base_seq, seq_one_past_segment,
@@ -1239,7 +1226,7 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 
 	if ( tcp_option && tcp_hdr_len > sizeof(*tp) &&
 	     tcp_hdr_len <= uint32(caplen) )
-		ParseTCPOptions(tp, TCPOptionEvent, this, is_orig, 0);
+		ParseTCPOptions(tp, TCPOptionEvent, this, is_orig, 0); //No state change
 
 	// PIA/signature matching state needs to be initialized before
 	// processing/reassembling any TCP data, since that processing may
@@ -1281,6 +1268,36 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 
 	if ( ! reassembling )
 		ForwardPacket(len, data, is_orig, rel_data_seq, ip, caplen);
+
+	}
+
+
+void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
+					uint64 seq, const IP_Hdr* ip, int caplen)
+	{
+	TransportLayerAnalyzer::DeliverPacket(len, data, orig, seq, ip, caplen);
+
+	const struct tcphdr* tp = ExtractTCP_Header(data, len, caplen);
+	if ( ! tp )
+		return;
+
+	if ( ! ValidateMD5Option(tp))
+	//if (satisfy_constraint(len, data, orig, seq, ip, caplen)) // TODO: && not in already forked ambiguities
+		{
+		TCP_Endpoint* orig_new = orig.clone();
+		TCP_Endpoint* resp_new = resp.clone();
+		orig_new.SetPeer(resp_new);
+		resp_new.SetPeer(orig_new);
+		orig_forks.push_back(orig_new);
+		resp_forks.push_back(resp_new);
+		}
+
+	DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, orig, tp);
+	for ( analyzer::tcp_endpoint_list::iterator var = orig_forks.begin(); var != orig_forks.end(); var++ )
+		{
+		DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, var, tp);
+		}
+
 	}
 
 void TCP_Analyzer::DeliverStream(int len, const u_char* data, bool orig)

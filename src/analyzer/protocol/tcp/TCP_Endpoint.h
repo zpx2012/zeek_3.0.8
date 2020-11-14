@@ -30,6 +30,8 @@ public:
 	TCP_Endpoint(TCP_Analyzer* analyzer, int is_orig);
 	~TCP_Endpoint();
 
+	TCP_Endpoint* clone();//Pengxiong
+
 	void Done();
 
 	TCP_Analyzer* TCP()	{ return tcp_analyzer; }

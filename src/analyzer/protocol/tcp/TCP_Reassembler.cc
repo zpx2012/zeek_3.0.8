@@ -60,6 +60,31 @@ TCP_Reassembler::~TCP_Reassembler()
 	Unref(record_contents_file);
 	}
 
+TCP_Reassembler* TCP_Reassembler::clone(Analyzer* arg_dst_analyzer, TCP_Analyzer* arg_tcp_analyzer, TCP_Endpoint* arg_endp, BroFile* f)
+	{
+	TCP_Reassembler* copy = new TCP_Reassembler(arg_dst_analyzer, arg_tcp_analyzer, type, arg_endp);
+	for ( DataBlock* b = blocks; b; b = b->next ){
+		copy->NewBlock(0, b->seq, b->upper-b->seq, b->block);
+	}
+	copy->deliver_tcp_contents = deliver_tcp_contents;
+	copy->had_gap = had_gap;
+	copy->did_EOF = did_EOF;
+	copy->skip_deliveries = skip_deliveries;
+	copy-> seq_to_skip = seq_to_skip;
+	copy->in_delivery = in_delivery;
+	copy->flags = flags;
+	copy->record_contents_file = f;
+
+	copy->last_reassem_seq = last_reassem_seq;
+	copy->trim_seq = trim_seq;
+	copy->max_old_blocks = max_old_blocks;
+	copy->total_old_blocks = size_of_all_blocks;
+
+	//todo BroObj copy??
+	return copy;
+	}
+
+
 void TCP_Reassembler::Done()
 	{
 	MatchUndelivered(-1, true);

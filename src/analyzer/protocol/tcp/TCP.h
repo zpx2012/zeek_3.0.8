@@ -189,6 +189,10 @@ protected:
 private:
 	TCP_Endpoint* orig;
 	TCP_Endpoint* resp;
+	//Pengxiong
+	typedef list<analyzer::TCP_Endpoint*> tcp_endpoint_list;
+	tcp_endpoint_list orig_forks, resp_forks;
+	//TODO: list of forked ambuities  
 
 	typedef list<analyzer::Analyzer*> analyzer_list;
 	analyzer_list packet_children;

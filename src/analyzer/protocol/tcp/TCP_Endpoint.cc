@@ -55,6 +55,21 @@ TCP_Endpoint::~TCP_Endpoint()
 	Unref(contents_file);
 	}
 
+/* Pengxiong start*/
+TCP_Endpoint* TCP_Endpoint::clone()//
+	{
+	TCP_Endpoint *copy = new TCP_Endpoint(*this);
+	// 		TCP_Endpoint* peer;
+	//  contents_processor;
+	// TCP_Analyzer* tcp_analyzer;
+	// BroFile* contents_file;
+	copy->tcp_analyzer = tcp_analyzer;
+	copy->contents_file = contents_file;
+	copy->contents_processor = contents_processor.clone(copy->tcp_analyzer, copy->tcp_analyzer, copy, copy->contents_file); //TCP_Reassembler*
+	return copy;
+	}
+
+
 Connection* TCP_Endpoint::Conn() const
 	{
 	return tcp_analyzer->Conn();

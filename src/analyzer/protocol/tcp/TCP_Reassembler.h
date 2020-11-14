@@ -24,6 +24,8 @@ public:
 
 	~TCP_Reassembler() override;
 
+	TCP_Reassembler* clone(Analyzer* arg_dst_analyzer, TCP_Analyzer* arg_tcp_analyzer, TCP_Endpoint* arg_endp, BroFile* f);
+
 	void Done();
 
 	void SetDstAnalyzer(Analyzer* analyzer)	{ dst_analyzer = analyzer; }
