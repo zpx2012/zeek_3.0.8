@@ -154,6 +154,9 @@ public:
 	HTTP_Analyzer(Connection* conn);
 	~HTTP_Analyzer() override;
 
+	//Pengxiong
+	HTTP_Analyzer(const HTTP_Analyzer& http_analyzer);
+
 	void HTTP_Header(int is_orig, mime::MIME_Header* h);
 	void HTTP_EntityData(int is_orig, BroString* entity_data);
 	void HTTP_MessageDone(int is_orig, HTTP_Message* message);

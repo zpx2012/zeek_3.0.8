@@ -136,6 +136,63 @@ void Analyzer::CtorInit(const Tag& arg_tag, Connection* arg_conn)
 	output_handler = 0;
 	}
 
+//Pengxiong's code
+Analyzer::Analyzer(const Analyzer& analyzer)
+	{
+	conn = analyzer.conn;
+	tag = analyzer.tag;
+	id = ++id_counter;//TODO:?
+	protocol_confirmed = analyzer.protocol_confirmed;
+	timers_canceled = analyzer.timers_canceled;
+	skip = analyzer.skip;
+	finished = analyzer.finished;
+	removing = analyzer.removing;
+
+	//Pointers
+	parent = analyzer.parent;
+	signature = analyzer.signature;
+	output_handler = analyzer.output_handler;	
+	orig_supporters = resp_supporters = 0;
+	children.clear();
+	new_children.clear();
+
+	for ( SupportAnalyzer* a = analyzer.orig_supporters; a; a = a->sibling )
+		AddSupportAnalyzer(new SupportAnalyzer(*a));
+	
+	for ( SupportAnalyzer* a = analyzer.resp_supporters; a; a = a->sibling )
+		AddSupportAnalyzer(new SupportAnalyzer(*a));
+
+	LOOP_OVER_GIVEN_CONST_CHILDREN(i, analyzer.children)		
+		{
+		if(*i)
+			{
+			Analyzer* copy = new Analyzer(**i);
+			copy->parent = this;
+			children.push_back(copy);
+			}
+		}
+
+	LOOP_OVER_GIVEN_CONST_CHILDREN(i, analyzer.new_children)
+		{
+		if(*i)
+			{
+			Analyzer* copy = new Analyzer(**i);
+			copy->parent = this;
+			new_children.push_back(copy);
+			}
+		}
+	}
+
+SupportAnalyzer* Analyzer::FindSupportAnalyzer(const char* name, bool orig)
+	{
+	SupportAnalyzer* s = orig ? orig_supporters : resp_supporters;
+	for ( ; s; s = s->sibling )
+		if ( s->IsAnalyzer(name) )
+			return s;
+
+	return NULL;
+	}
+
 Analyzer::~Analyzer()
 	{
 	assert(finished);

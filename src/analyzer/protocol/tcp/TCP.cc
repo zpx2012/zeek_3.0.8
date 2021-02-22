@@ -137,7 +137,43 @@ TCP_Analyzer::TCP_Analyzer(Connection* conn)
 
 	orig->SetPeer(resp);
 	resp->SetPeer(orig);
+
+	//Pengxiong's code
+	orig_forks.push_back(orig);
+	resp_forks.push_back(resp);
 	}
+
+TCP_Analyzer::TCP_Analyzer(const TCP_Analyzer& tcp_analyzer): TransportLayerAnalyzer(tcp_analyzer)
+	{
+	deferred_gen_event = tcp_analyzer.deferred_gen_event;
+	close_deferred = tcp_analyzer.close_deferred;
+	seen_first_ACK = tcp_analyzer.seen_first_ACK;
+	is_active = tcp_analyzer.is_active;
+	reassembling = tcp_analyzer.reassembling;
+	first_packet_seen = tcp_analyzer.first_packet_seen;
+	is_partial = tcp_analyzer.is_partial;
+
+	orig = tcp_analyzer.orig->clone();
+	resp = tcp_analyzer.resp->clone();
+	// orig = new TCP_Endpoint(*tcp_analyzer.orig);
+	// resp = new TCP_Endpoint(*tcp_analyzer.resp);
+
+	orig->SetPeer(resp);
+	resp->SetPeer(orig);
+
+	// tcp_endpoint_list orig_forks, resp_forks;
+	// analyzer_list packet_children;
+	orig_forks = tcp_analyzer.orig_forks;
+	resp_forks = tcp_analyzer.resp_forks;
+	packet_children = tcp_analyzer.packet_children;
+
+	const analyzer_list& children(GetChildren());
+	LOOP_OVER_CONST_CHILDREN(i)
+		static_cast<TCP_ApplicationAnalyzer*>(*i)->SetTCP(this);
+
+	}
+
+
 
 TCP_Analyzer::~TCP_Analyzer()
 	{
@@ -1271,6 +1307,17 @@ void TCP_Analyzer::DeliverPacketPerFork(int len, const u_char* data, bool is_ori
 
 	}
 
+int TCP_Analyzer::find_ambiguity(int len, const u_char* data, bool is_orig,
+					uint64 seq, const IP_Hdr* ip, int caplen, const struct tcphdr* tp){
+	if(! ValidateMD5Option(tp))
+		return 1;
+	return -1;
+}
+
+void TCP_Analyzer::execute_ambiguity_action(int action){
+	return;
+}
+
 
 void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 					uint64 seq, const IP_Hdr* ip, int caplen)
@@ -1281,22 +1328,50 @@ void TCP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig,
 	if ( ! tp )
 		return;
 
-	if ( ! ValidateMD5Option(tp))
-	//if (satisfy_constraint(len, data, orig, seq, ip, caplen)) // TODO: && not in already forked ambiguities
+	// DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, orig, tp);
+	int i = 0;
+	int ambiguity_id = -1;
+	for ( analyzer::tcp::TCP_Analyzer::tcp_endpoint_list::iterator var = orig_forks.begin(); var != orig_forks.end(); var++, i++ )
 		{
-		TCP_Endpoint* orig_new = orig.clone();
-		TCP_Endpoint* resp_new = resp.clone();
-		orig_new.SetPeer(resp_new);
-		resp_new.SetPeer(orig_new);
-		orig_forks.push_back(orig_new);
-		resp_forks.push_back(resp_new);
+		// if ( ! ValidateMD5Option(tp))
+		//if (satisfy_constraint(len, data, orig, seq, ip, caplen)) // TODO: && not in already forked ambiguities
+		TCP_Endpoint *orig_cur = *var, *resp_cur = (*var)->peer;
+		ambiguity_id = find_ambiguity(len, data, orig_cur, seq, ip, caplen, tp);
+		if (ambiguity_id != -1) 
+			{
+			printf("State%d: found ambiguity: No.%d\n", i, ambiguity_id);
+			if(orig_cur->ambiguities[ambiguity_id] == -1) //fork
+				{
+				printf("State%d: ambiguity %d hasn't been recorded\n", i, ambiguity_id);
+				TCP_Analyzer* tcp_analyzer_new = new TCP_Analyzer(*this);
+				TCP_Endpoint* orig_new = tcp_analyzer_new->orig; //TODO: add an id to distinguish forked states
+				TCP_Endpoint* resp_new = tcp_analyzer_new->resp;
+				orig_forks.push_back(orig_new);
+				resp_forks.push_back(resp_new);
+				TCP_Reassembler* tcp_reassembler_orig_new = orig_cur->contents_processor->clone(tcp_analyzer_new, tcp_analyzer_new, orig_new, orig_cur->contents_file);
+				TCP_Reassembler* tcp_reassembler_resp_new = resp_cur->contents_processor->clone(tcp_analyzer_new, tcp_analyzer_new, resp_new, resp_cur->contents_file);
+				tcp_analyzer_new->SetReassembler(tcp_reassembler_orig_new, tcp_reassembler_resp_new);
+				orig_new->ambiguities[ambiguity_id] = 2;
+				orig_cur->ambiguities[ambiguity_id] = 1;
+				}
+			else
+				printf("State%d: ambiguity %d has been recorded\n", i, ambiguity_id);
+			// execute_ambiguity_action(orig->ambiguities[ambiguity_id]);
+			if(orig_cur->ambiguities[ambiguity_id] == 1)
+				{
+				printf("State%d: ambiguity %d is being ignored\n\n", i, ambiguity_id);
+				continue;  //ignore
+				}
+			else
+				{
+				printf("State%d: ambiguity %d is being accepted\n\n", i, ambiguity_id);
+				}
+			}
+			
+		DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, orig_cur, tp);
 		}
-
-	DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, orig, tp);
-	for ( analyzer::tcp_endpoint_list::iterator var = orig_forks.begin(); var != orig_forks.end(); var++ )
-		{
-		DeliverPacketPerFork(len, data, is_orig, seq, ip, caplen, var, tp);
-		}
+	if(ambiguity_id != -1)
+		printf("End of DeliverPacket\n\n");
 
 	}
 
@@ -1722,7 +1797,12 @@ void TCP_Analyzer::EndpointEOF(TCP_Reassembler* endp)
 
 	const analyzer_list& children(GetChildren());
 	LOOP_OVER_CONST_CHILDREN(i)
-		static_cast<TCP_ApplicationAnalyzer*>(*i)->EndpointEOF(endp->IsOrig());
+		{
+		TCP_ApplicationAnalyzer* tcp_aa = static_cast<TCP_ApplicationAnalyzer *>(*i);
+		bool isorig = endp->IsOrig();
+		tcp_aa->EndpointEOF(isorig);
+		// static_cast<TCP_ApplicationAnalyzer *>(*i)->EndpointEOF(endp->IsOrig());
+		}
 
 	if ( close_deferred )
 		{

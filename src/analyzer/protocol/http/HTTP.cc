@@ -867,6 +867,56 @@ HTTP_Analyzer::HTTP_Analyzer(Connection* conn)
 	AddSupportAnalyzer(content_line_resp);
 	}
 
+HTTP_Analyzer::HTTP_Analyzer(const HTTP_Analyzer& http_analyzer)
+: tcp::TCP_ApplicationAnalyzer(http_analyzer)
+	{
+	num_requests = http_analyzer.num_requests;
+	num_replies = http_analyzer.num_replies;
+	num_request_lines = http_analyzer.num_request_lines;
+	num_reply_lines = http_analyzer.num_reply_lines;
+	request_version = http_analyzer.request_version;
+	reply_version = http_analyzer.reply_version;	// unknown version
+	keep_alive = http_analyzer.keep_alive;
+	connection_close = http_analyzer.connection_close;
+
+	request_state = http_analyzer.request_state;
+	reply_state = http_analyzer.reply_state;
+
+	request_ongoing = http_analyzer.request_ongoing;
+
+	reply_ongoing = http_analyzer.reply_ongoing;
+	reply_code = http_analyzer.reply_code;
+
+	connect_request = http_analyzer.connect_request;
+
+	upgraded = http_analyzer.upgraded;
+	upgrade_connection = http_analyzer.upgrade_connection;
+	upgrade_protocol = http_analyzer.upgrade_protocol;
+
+	//Pointers
+	request_message = http_analyzer.request_message;
+	reply_message = http_analyzer.reply_message;
+
+	request_method = http_analyzer.request_method->Clone();
+	request_URI = http_analyzer.request_URI->Clone();
+	unescaped_URI = http_analyzer.unescaped_URI->Clone();
+	reply_reason_phrase = http_analyzer.reply_reason_phrase->Clone();
+	pia = http_analyzer.pia;
+
+	std::queue<Val*> tmp_unanswered_requests = http_analyzer.unanswered_requests;
+	while(!tmp_unanswered_requests.empty())
+		{
+		unanswered_requests.push(tmp_unanswered_requests.front()->Clone());
+		tmp_unanswered_requests.pop();
+		}
+
+	content_line_orig = static_cast<tcp::ContentLine_Analyzer*> (FindSupportAnalyzer("CONTENTLINE", true));
+	content_line_resp = static_cast<tcp::ContentLine_Analyzer*> (FindSupportAnalyzer("CONTENTLINE", false));
+	if(!content_line_orig || !content_line_resp)
+		printf("Error: content_line_orig(%p) or content_line_resp(%p) is NULL.\n", content_line_orig, content_line_resp);
+	}
+
+
 HTTP_Analyzer::~HTTP_Analyzer()
 	{
 	Unref(request_method);

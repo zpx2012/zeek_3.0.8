@@ -31,6 +31,8 @@ public:
 	explicit TCP_Analyzer(Connection* conn);
 	~TCP_Analyzer() override;
 
+	TCP_Analyzer(const TCP_Analyzer& tcp_analyzer);
+
 	void EnableReassembly();
 
 	// Add a child analyzer that will always get the packets,
@@ -98,6 +100,16 @@ protected:
 	void FlipRoles() override;
 	bool IsReuse(double t, const u_char* pkt) override;
 
+	//Pengxiong's code
+	TCP_Analyzer* clone();
+	void DeliverPacketPerFork(int len, const u_char* data, bool is_orig,
+					uint64 seq, const IP_Hdr* ip, int caplen, 
+					TCP_Endpoint* orig, const struct tcphdr* tp);
+	int find_ambiguity(int len, const u_char* data, bool is_orig,
+					uint64 seq, const IP_Hdr* ip, int caplen, const struct tcphdr* tp);
+	void execute_ambiguity_action(int action);	
+	bool ValidateMD5Option(const struct tcphdr* tcp);
+
 	// Returns the TCP header pointed to by data (which we assume is
 	// aligned), updating data, len & caplen.  Returns nil if the header
 	// isn't fully present.
@@ -109,7 +121,6 @@ protected:
 	bool ValidateChecksum(const struct tcphdr* tp, TCP_Endpoint* endpoint,
 				int len, int caplen);
 
-	bool ValidateMD5Option(const struct tcphdr* tcp);
 
 	void SetPartialStatus(TCP_Flags flags, bool is_orig);
 
@@ -189,8 +200,9 @@ protected:
 private:
 	TCP_Endpoint* orig;
 	TCP_Endpoint* resp;
+
 	//Pengxiong
-	typedef list<analyzer::TCP_Endpoint*> tcp_endpoint_list;
+	typedef list<analyzer::tcp::TCP_Endpoint*> tcp_endpoint_list;
 	tcp_endpoint_list orig_forks, resp_forks;
 	//TODO: list of forked ambuities  
 
@@ -223,6 +235,9 @@ public:
 	explicit TCP_ApplicationAnalyzer(Connection* conn)
 	: Analyzer(conn)
 		{ tcp = 0; }
+
+	TCP_ApplicationAnalyzer(const TCP_ApplicationAnalyzer& tcp_aa)
+	: Analyzer(tcp_aa) { tcp = tcp_aa.tcp; }
 
 	~TCP_ApplicationAnalyzer() override { }
 
@@ -274,6 +289,9 @@ class TCP_SupportAnalyzer : public analyzer::SupportAnalyzer {
 public:
 	TCP_SupportAnalyzer(const char* name, Connection* conn, bool arg_orig)
 		: analyzer::SupportAnalyzer(name, conn, arg_orig)	{ }
+
+	TCP_SupportAnalyzer(const TCP_SupportAnalyzer& tcp_sa)
+		: analyzer::SupportAnalyzer(tcp_sa) { }
 
 	~TCP_SupportAnalyzer() override {}
 

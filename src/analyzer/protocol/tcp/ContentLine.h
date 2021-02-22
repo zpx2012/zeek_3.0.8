@@ -16,6 +16,10 @@ namespace analyzer { namespace tcp {
 class ContentLine_Analyzer : public TCP_SupportAnalyzer {
 public:
 	ContentLine_Analyzer(Connection* conn, bool orig, int max_line_length=DEFAULT_MAX_LINE_LENGTH);
+
+	//Pengxiong's code
+	ContentLine_Analyzer(const ContentLine_Analyzer& cl_a);
+
 	~ContentLine_Analyzer() override;
 
 	void SupressWeirds(bool enable)

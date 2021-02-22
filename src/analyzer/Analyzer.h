@@ -104,6 +104,11 @@ public:
 	 */
 	explicit Analyzer(Connection* conn);
 
+
+	//Pengxiong's code
+	Analyzer(const Analyzer& analyzer);
+	SupportAnalyzer* FindSupportAnalyzer(const char* name, bool orig);
+
 	/**
 	 * Destructor.
 	 */
@@ -740,6 +745,10 @@ public:
 	SupportAnalyzer(const char* name, Connection* conn, bool arg_orig)
 		: Analyzer(name, conn)	{ orig = arg_orig; sibling = 0; }
 
+	// Pengxiong's code
+	SupportAnalyzer(const SupportAnalyzer& sa)
+		: Analyzer(sa) 			{ orig = sa.orig; sibling = 0;}
+
 	/**
 	 * Destructor.
 	 */
@@ -822,6 +831,10 @@ public:
 	 */
 	TransportLayerAnalyzer(const char* name, Connection* conn)
 		: Analyzer(name, conn)	{ pia = 0; }
+
+	//Pengxiong's code
+	TransportLayerAnalyzer(const TransportLayerAnalyzer& tla)
+		: Analyzer(tla) 		{ pia = tla.pia; }
 
 	/**
 	 * Overridden from parent class.
