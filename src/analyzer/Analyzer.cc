@@ -157,16 +157,16 @@ Analyzer::Analyzer(const Analyzer& analyzer)
 	new_children.clear();
 
 	for ( SupportAnalyzer* a = analyzer.orig_supporters; a; a = a->sibling )
-		AddSupportAnalyzer(new SupportAnalyzer(*a));
+		AddSupportAnalyzer(static_cast<SupportAnalyzer*>(a->clone()));
 	
 	for ( SupportAnalyzer* a = analyzer.resp_supporters; a; a = a->sibling )
-		AddSupportAnalyzer(new SupportAnalyzer(*a));
+		AddSupportAnalyzer(static_cast<SupportAnalyzer*>(a->clone()));
 
 	LOOP_OVER_GIVEN_CONST_CHILDREN(i, analyzer.children)		
 		{
 		if(*i)
 			{
-			Analyzer* copy = new Analyzer(**i);
+			Analyzer* copy = (*i)->clone();
 			copy->parent = this;
 			children.push_back(copy);
 			}
@@ -176,7 +176,7 @@ Analyzer::Analyzer(const Analyzer& analyzer)
 		{
 		if(*i)
 			{
-			Analyzer* copy = new Analyzer(**i);
+			Analyzer* copy = (*i)->clone();
 			copy->parent = this;
 			new_children.push_back(copy);
 			}

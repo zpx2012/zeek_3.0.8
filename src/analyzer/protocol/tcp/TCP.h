@@ -31,7 +31,9 @@ public:
 	explicit TCP_Analyzer(Connection* conn);
 	~TCP_Analyzer() override;
 
+	//Pengxiong's code
 	TCP_Analyzer(const TCP_Analyzer& tcp_analyzer);
+	Analyzer* clone() override { return new TCP_Analyzer(*this); };
 
 	void EnableReassembly();
 
@@ -101,7 +103,6 @@ protected:
 	bool IsReuse(double t, const u_char* pkt) override;
 
 	//Pengxiong's code
-	TCP_Analyzer* clone();
 	void DeliverPacketPerFork(int len, const u_char* data, bool is_orig,
 					uint64 seq, const IP_Hdr* ip, int caplen, 
 					TCP_Endpoint* orig, const struct tcphdr* tp);

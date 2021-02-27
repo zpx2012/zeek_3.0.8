@@ -19,6 +19,7 @@ public:
 
 	//Pengxiong's code
 	ContentLine_Analyzer(const ContentLine_Analyzer& cl_a);
+	Analyzer* clone() override { return new ContentLine_Analyzer(*this); };
 
 	~ContentLine_Analyzer() override;
 
