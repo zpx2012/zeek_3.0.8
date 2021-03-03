@@ -139,6 +139,7 @@ void Analyzer::CtorInit(const Tag& arg_tag, Connection* arg_conn)
 //Pengxiong's code
 Analyzer::Analyzer(const Analyzer& analyzer)
 	{
+	printf("Analyzer(const Analyzer& analyzer)\n");
 	conn = analyzer.conn;
 	tag = analyzer.tag;
 	id = ++id_counter;//TODO:?

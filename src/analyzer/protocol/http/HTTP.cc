@@ -870,6 +870,7 @@ HTTP_Analyzer::HTTP_Analyzer(Connection* conn)
 HTTP_Analyzer::HTTP_Analyzer(const HTTP_Analyzer& http_analyzer)
 : tcp::TCP_ApplicationAnalyzer(http_analyzer)
 	{
+	printf("HTTP_Analyzer(const HTTP_Analyzer&);\n");
 	num_requests = http_analyzer.num_requests;
 	num_replies = http_analyzer.num_replies;
 	num_request_lines = http_analyzer.num_request_lines;
@@ -897,10 +898,14 @@ HTTP_Analyzer::HTTP_Analyzer(const HTTP_Analyzer& http_analyzer)
 	request_message = http_analyzer.request_message;
 	reply_message = http_analyzer.reply_message;
 
-	request_method = http_analyzer.request_method->Clone();
-	request_URI = http_analyzer.request_URI->Clone();
-	unescaped_URI = http_analyzer.unescaped_URI->Clone();
-	reply_reason_phrase = http_analyzer.reply_reason_phrase->Clone();
+	if(http_analyzer.request_method)
+		request_method = http_analyzer.request_method->Clone();
+	if(http_analyzer.request_URI)
+		request_URI = http_analyzer.request_URI->Clone();
+	if(http_analyzer.unescaped_URI)
+		unescaped_URI = http_analyzer.unescaped_URI->Clone();
+	if(http_analyzer.reply_reason_phrase)
+		reply_reason_phrase = http_analyzer.reply_reason_phrase->Clone();
 	pia = http_analyzer.pia;
 
 	std::queue<Val*> tmp_unanswered_requests = http_analyzer.unanswered_requests;

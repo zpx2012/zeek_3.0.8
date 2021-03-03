@@ -145,6 +145,7 @@ TCP_Analyzer::TCP_Analyzer(Connection* conn)
 
 TCP_Analyzer::TCP_Analyzer(const TCP_Analyzer& tcp_analyzer): TransportLayerAnalyzer(tcp_analyzer)
 	{
+	printf("TCP_Analyzer(const TCP_Analyzer&)\n");
 	deferred_gen_event = tcp_analyzer.deferred_gen_event;
 	close_deferred = tcp_analyzer.close_deferred;
 	seen_first_ACK = tcp_analyzer.seen_first_ACK;

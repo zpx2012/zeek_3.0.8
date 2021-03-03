@@ -156,7 +156,7 @@ public:
 
 	//Pengxiong
 	HTTP_Analyzer(const HTTP_Analyzer& http_analyzer);
-	Analyzer* clone() override { return new HTTP_Analyzer(*this); };
+	Analyzer* clone() override { printf("HTTP Clone\n"); return new HTTP_Analyzer(*this); };
 
 	void HTTP_Header(int is_orig, mime::MIME_Header* h);
 	void HTTP_EntityData(int is_orig, BroString* entity_data);

@@ -107,7 +107,7 @@ public:
 
 	//Pengxiong's code
 	Analyzer(const Analyzer& analyzer);
-	virtual Analyzer* clone() { return new Analyzer(*this); };
+	virtual Analyzer* clone() { printf("Analyzer clone\n"); return new Analyzer(*this); };
 	SupportAnalyzer* FindSupportAnalyzer(const char* name, bool orig);
 
 	/**

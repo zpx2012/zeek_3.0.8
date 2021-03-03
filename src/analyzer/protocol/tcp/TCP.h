@@ -33,7 +33,7 @@ public:
 
 	//Pengxiong's code
 	TCP_Analyzer(const TCP_Analyzer& tcp_analyzer);
-	Analyzer* clone() override { return new TCP_Analyzer(*this); };
+	Analyzer* clone() override { printf("TCP_Analyzer clone\n"); return new TCP_Analyzer(*this); };
 
 	void EnableReassembly();
 
@@ -238,7 +238,7 @@ public:
 		{ tcp = 0; }
 
 	TCP_ApplicationAnalyzer(const TCP_ApplicationAnalyzer& tcp_aa)
-	: Analyzer(tcp_aa) { tcp = tcp_aa.tcp; }
+	: Analyzer(tcp_aa) { printf("TCP_ApplicationAnalyzer(const TCP_ApplicationAnalyzer&)\n"); tcp = tcp_aa.tcp; }
 
 	~TCP_ApplicationAnalyzer() override { }
 
@@ -292,7 +292,7 @@ public:
 		: analyzer::SupportAnalyzer(name, conn, arg_orig)	{ }
 
 	TCP_SupportAnalyzer(const TCP_SupportAnalyzer& tcp_sa)
-		: analyzer::SupportAnalyzer(tcp_sa) { }
+		: analyzer::SupportAnalyzer(tcp_sa) { printf("TCP_SupportAnalyzer(const TCP_SupportAnalyzer&"); }
 
 	~TCP_SupportAnalyzer() override {}
 
