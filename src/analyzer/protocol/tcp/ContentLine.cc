@@ -23,6 +23,7 @@ ContentLine_Analyzer::ContentLine_Analyzer(const char* name, Connection* conn, b
 ContentLine_Analyzer::ContentLine_Analyzer(const ContentLine_Analyzer& contentline_analyzer)
 : TCP_SupportAnalyzer(contentline_analyzer)
 	{
+	printf("ContentLine_Analyzer(const ContentLine_Analyzer&)\n");
 	buf = 0;
 	offset = 0;
 	buf_len = 0;

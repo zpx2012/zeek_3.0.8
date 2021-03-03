@@ -292,7 +292,7 @@ public:
 		: analyzer::SupportAnalyzer(name, conn, arg_orig)	{ }
 
 	TCP_SupportAnalyzer(const TCP_SupportAnalyzer& tcp_sa)
-		: analyzer::SupportAnalyzer(tcp_sa) { printf("TCP_SupportAnalyzer(const TCP_SupportAnalyzer&"); }
+		: analyzer::SupportAnalyzer(tcp_sa) { printf("TCP_SupportAnalyzer(const TCP_SupportAnalyzer&)\n"); }
 
 	~TCP_SupportAnalyzer() override {}
 

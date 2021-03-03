@@ -157,29 +157,43 @@ Analyzer::Analyzer(const Analyzer& analyzer)
 	children.clear();
 	new_children.clear();
 
-	for ( SupportAnalyzer* a = analyzer.orig_supporters; a; a = a->sibling )
+	printf("clone analyzer.orig_supporters\n");
+	for ( SupportAnalyzer* a = analyzer.orig_supporters; a; a = a->sibling ){
+		printf("clone: %s\n", a->GetAnalyzerName());
 		AddSupportAnalyzer(static_cast<SupportAnalyzer*>(a->clone()));
+		printf("\n");
+	}
 	
-	for ( SupportAnalyzer* a = analyzer.resp_supporters; a; a = a->sibling )
+	printf("clone analyzer.resp_supporters\n");
+	for ( SupportAnalyzer* a = analyzer.resp_supporters; a; a = a->sibling ){
+		printf("clone: %s\n", a->GetAnalyzerName());
 		AddSupportAnalyzer(static_cast<SupportAnalyzer*>(a->clone()));
+		printf("\n");
+	}
 
+	printf("clone analyzer.children\n");
 	LOOP_OVER_GIVEN_CONST_CHILDREN(i, analyzer.children)		
 		{
 		if(*i)
 			{
+			printf("clone: %s\n", (*i)->GetAnalyzerName());
 			Analyzer* copy = (*i)->clone();
+			printf("\n");
 			copy->parent = this;
 			children.push_back(copy);
 			}
 		}
 
+	printf("clone analyzer.new_children\n");
 	LOOP_OVER_GIVEN_CONST_CHILDREN(i, analyzer.new_children)
 		{
 		if(*i)
 			{
+			printf("clone: %s\n", (*i)->GetAnalyzerName());
 			Analyzer* copy = (*i)->clone();
 			copy->parent = this;
 			new_children.push_back(copy);
+			printf("\n");
 			}
 		}
 	}
